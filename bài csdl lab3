@@ -1,0 +1,82 @@
+--bai1: Với mỗi đề án, liệt kê tên đề án và tổng số giờ làm việc một tuần của tất cả các nhân viên tham dự đề án đó.
+--Xuất định dạng “tổng số giờ làm việc” kiểu decimal với 2 số thập phân.
+
+SELECT dbo.DEAN.TENDEAN, CAST(SUM(THOIGIAN) AS DECIMAL(5,2)) AS 'Tong so gio lam viec' FROM dbo.CONGVIEC 
+INNER JOIN dbo.DEAN ON dbo.CONGVIEC.MADA=dbo.DEAN.MADA
+INNER JOIN dbo.PHANCONG ON dbo.CONGVIEC.MADA=dbo.PHANCONG.MADA
+GROUP BY TENDEAN
+
+SELECT dbo.DEAN.TENDEAN, CONVERT(DECIMAL(5,2),SUM(THOIGIAN)) AS 'Tong so gio lam viec' FROM dbo.CONGVIEC 
+INNER JOIN dbo.DEAN ON dbo.CONGVIEC.MADA=dbo.DEAN.MADA
+INNER JOIN dbo.PHANCONG ON dbo.CONGVIEC.MADA=dbo.PHANCONG.MADA
+GROUP BY TENDEAN
+
+--Xuất định dạng “tổng số giờ làm việc” kiểu varchar
+
+SELECT dbo.DEAN.TENDEAN, CAST(SUM(THOIGIAN) AS VARCHAR(20)) AS 'Tong so gio lam viec' FROM dbo.CONGVIEC 
+INNER JOIN dbo.DEAN ON dbo.CONGVIEC.MADA=dbo.DEAN.MADA
+INNER JOIN dbo.PHANCONG ON dbo.CONGVIEC.MADA=dbo.PHANCONG.MADA
+GROUP BY TENDEAN
+
+SELECT dbo.DEAN.TENDEAN, CONVERT(VARCHAR(20),SUM(THOIGIAN)) AS 'Tong so gio lam viec' FROM dbo.CONGVIEC 
+INNER JOIN dbo.DEAN ON dbo.CONGVIEC.MADA=dbo.DEAN.MADA
+INNER JOIN dbo.PHANCONG ON dbo.CONGVIEC.MADA=dbo.PHANCONG.MADA
+GROUP BY TENDEAN
+
+--➢ Với mỗi phòng ban, liệt kê tên phòng ban và lương trung bình của những nhân viên làm việc cho phòng ban đó.
+-- Xuất định dạng “luong trung bình” kiểu decimal với 2 số thập phân, sử dụng dấu phẩy để phân biệt phần nguyên và phần thập phân.
+
+SELECT dbo.PHONGBAN.TENPHG, CAST(AVG(dbo.NHANVIEN.LUONG) AS DECIMAL(10,2)) AS 'Lương trung bình' 
+FROM dbo.NHANVIEN
+INNER JOIN dbo.PHONGBAN ON dbo.NHANVIEN.PHG=dbo.PHONGBAN.MAPHG
+GROUP BY TENPHG
+
+SELECT dbo.PHONGBAN.TENPHG, CONVERT(DECIMAL(10,2),AVG(dbo.NHANVIEN.LUONG)) AS 'Lương trung bình' 
+FROM dbo.NHANVIEN INNER JOIN dbo.PHONGBAN ON dbo.NHANVIEN.PHG=dbo.PHONGBAN.MAPHG
+GROUP BY TENPHG
+
+-- Xuất định dạng “luong trung bình” kiểu varchar. Sử dụng dấu phẩy tách cứ mỗi 3 chữ số trong chuỗi ra, gợi ý dùng thêm các hàm Left, Replace
+SELECT dbo.PHONGBAN.TENPHG, LEFT(CAST(AVG(dbo.NHANVIEN.LUONG) AS VARCHAR(10)),3) + ',' + REPLACE(CAST(AVG(dbo.NHANVIEN.LUONG) AS VARCHAR(10)),LEFT(CAST(AVG(dbo.NHANVIEN.LUONG) AS VARCHAR(10)),3),',') AS 'Lương trung bình' 
+FROM dbo.NHANVIEN
+INNER JOIN dbo.PHONGBAN ON dbo.NHANVIEN.PHG=dbo.PHONGBAN.MAPHG
+GROUP BY TENPHG
+
+--bai2: 
+--Xuất định dạng “tổng số giờ làm việc” với hàm CEILING
+SELECT dbo.DEAN.TENDEAN, CEILING(CAST(SUM(THOIGIAN) AS DECIMAL(5,2))) AS 'Tong so gio lam viec' FROM dbo.CONGVIEC 
+INNER JOIN dbo.DEAN ON dbo.CONGVIEC.MADA=dbo.DEAN.MADA
+INNER JOIN dbo.PHANCONG ON dbo.CONGVIEC.MADA=dbo.PHANCONG.MADA
+GROUP BY TENDEAN
+--Xuất định dạng “tổng số giờ làm việc” với hàm FLOOR
+SELECT dbo.DEAN.TENDEAN, FLOOR(CAST(SUM(THOIGIAN) AS DECIMAL(5,2))) AS 'Tong so gio lam viec' FROM dbo.CONGVIEC 
+INNER JOIN dbo.DEAN ON dbo.CONGVIEC.MADA=dbo.DEAN.MADA
+INNER JOIN dbo.PHANCONG ON dbo.CONGVIEC.MADA=dbo.PHANCONG.MADA
+GROUP BY TENDEAN
+--Xuất định dạng “tổng số giờ làm việc” làm tròn tới 2 chữ số thập phân
+SELECT dbo.DEAN.TENDEAN, ROUND(CAST(SUM(THOIGIAN) AS DECIMAL(5,2)),2) AS 'Tong so gio lam viec' FROM dbo.CONGVIEC 
+INNER JOIN dbo.DEAN ON dbo.CONGVIEC.MADA=dbo.DEAN.MADA
+INNER JOIN dbo.PHANCONG ON dbo.CONGVIEC.MADA=dbo.PHANCONG.MADA
+GROUP BY TENDEAN
+--Cho biết họ tên nhân viên (HONV, TENLOT, TENNV) có mức lương trên mức lương trung bình (làm tròn đến 2 số thập phân) của phòng "Nghiên cứu"
+SELECT dbo.NHANVIEN.HONV+' '+dbo.NHANVIEN.TENLOT+' '+dbo.NHANVIEN.TENNV AS 'Họ và tên'
+FROM dbo.NHANVIEN
+WHERE LUONG>(SELECT ROUND(AVG(dbo.NHANVIEN.LUONG),2) FROM dbo.NHANVIEN
+WHERE PHG=(SELECT dbo.PHONGBAN.MAPHG FROM dbo.PHONGBAN WHERE TENPHG=N'Nghiên cứu'))
+
+
+SELECT ROUND(AVG(dbo.NHANVIEN.LUONG),2) FROM dbo.NHANVIEN
+WHERE PHG=(SELECT dbo.PHONGBAN.MAPHG FROM dbo.PHONGBAN WHERE TENPHG=N'Nghiên cứu')
+--bai3
+SELECT dbo.NHANVIEN.HONV+' '+dbo.NHANVIEN.TENLOT+' '+dbo.NHANVIEN.TENNV,dbo.NHANVIEN.DCHI
+FROM dbo.NHANVIEN
+WHERE (SELECT COUNT(*) FROM dbo.THANNHAN GROUP BY MA_NVIEN)>2
+SELECT UPPER(dbo.NHANVIEN.HONV) FROM dbo.NHANVIEN
+SELECT LOWER(dbo.NHANVIEN.TENLOT) FROM dbo.NHANVIEN
+SELECT UPPER(dbo.NHANVIEN.TENNV) FROM dbo.NHANVIEN
+--SELECT COUNT(*) FROM dbo.THANNHAN GROUP BY MA_NVIEN
+--bai4
+SELECT YEAR(dbo.NHANVIEN.NGSINH) FROM dbo.NHANVIEN WHERE YEAR(dbo.NHANVIEN.NGSINH) BETWEEN 1960 AND 1965
+SELECT YEAR(GETDATE())-YEAR(dbo.NHANVIEN.NGSINH) AS 'tuổi' FROM dbo.NHANVIEN
+SELECT DATENAME(WEEKDAY,NGSINH) AS 'Thứ' FROM dbo.NHANVIEN
+SELECT CONVERT(VARCHAR(20),dbo.PHONGBAN.NG_NHANCHUC,105) AS 'ngày nhận chức' FROM dbo.PHONGBAN
+
